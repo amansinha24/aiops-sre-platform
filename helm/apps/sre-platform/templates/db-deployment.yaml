@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: application
+  labels:
+    app: db
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+        tier: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: db-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: db-storage
+              mountPath: /var/lib/postgresql/data
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - aiops
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - aiops
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: db-pvc
+        - name: init-script
+          configMap:
+            name: db-init-script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-init-script
+  namespace: application
+data:
+  init.sql: |
+    CREATE TABLE IF NOT EXISTS incidents (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        severity VARCHAR(50) DEFAULT 'medium',
+        status VARCHAR(50) DEFAULT 'open',
+        namespace VARCHAR(100),
+        pod_name VARCHAR(255),
+        root_cause TEXT,
+        ai_recommendation TEXT,
+        action_taken VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        resolved_at TIMESTAMP
+    );
+    INSERT INTO incidents (title, description, severity, status, namespace, pod_name)
+    VALUES
+        ('Pod CrashLoopBackOff', 'API pod restarting continuously', 'high', 'open', 'application', 'api-xxx'),
+        ('High Memory Usage', 'Frontend pod memory at 90%', 'medium', 'open', 'application', 'frontend-xxx'),
+        ('Deployment Failed', 'Bad image tag deployed', 'critical', 'resolved', 'application', 'api-yyy');

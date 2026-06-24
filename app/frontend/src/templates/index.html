@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOps SRE Platform</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #1a1a2e; color: #eee; }
+        .header { background: #16213e; padding: 20px; text-align: center; border-bottom: 2px solid #0f3460; }
+        .header h1 { margin: 0; color: #e94560; font-size: 2em; }
+        .header p { margin: 5px 0 0; color: #aaa; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #16213e; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #0f3460; }
+        .stat-card .number { font-size: 2.5em; font-weight: bold; color: #e94560; }
+        .stat-card .label { color: #aaa; margin-top: 5px; }
+        .incidents-table { background: #16213e; border-radius: 8px; overflow: hidden; border: 1px solid #0f3460; }
+        .incidents-table h2 { padding: 20px; margin: 0; border-bottom: 1px solid #0f3460; color: #e94560; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #0f3460; padding: 12px; text-align: left; color: #aaa; }
+        td { padding: 12px; border-bottom: 1px solid #0f3460; }
+        tr:last-child td { border-bottom: none; }
+        .severity-critical { color: #ff4444; font-weight: bold; }
+        .severity-high { color: #ff8800; font-weight: bold; }
+        .severity-medium { color: #ffcc00; }
+        .severity-low { color: #44ff44; }
+        .status-open { color: #ff4444; }
+        .status-resolved { color: #44ff44; }
+        .footer { text-align: center; padding: 20px; color: #555; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 AIOps SRE Platform</h1>
+        <p>Autonomous Incident Detection • AI-Powered RCA • Safe Auto-Remediation</p>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number">{{ incidents|length }}</div>
+                <div class="label">Total Incidents</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">
+                    {{ incidents|selectattr('status', 'equalto', 'open')|list|length }}
+                </div>
+                <div class="label">Open Incidents</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">
+                    {{ incidents|selectattr('severity', 'equalto', 'critical')|list|length }}
+                </div>
+                <div class="label">Critical</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">
+                    {{ incidents|selectattr('status', 'equalto', 'resolved')|list|length }}
+                </div>
+                <div class="label">Resolved</div>
+            </div>
+        </div>
+
+        <div class="incidents-table">
+            <h2>📋 Recent Incidents</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Namespace</th>
+                        <th>Pod</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incident in incidents %}
+                    <tr>
+                        <td>#{{ incident.id }}</td>
+                        <td>{{ incident.title }}</td>
+                        <td class="severity-{{ incident.severity }}">
+                            {{ incident.severity|upper }}
+                        </td>
+                        <td class="status-{{ incident.status }}">
+                            {{ incident.status|upper }}
+                        </td>
+                        <td>{{ incident.namespace or '-' }}</td>
+                        <td>{{ incident.pod_name or '-' }}</td>
+                        <td>{{ incident.created_at }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align:center; color:#555; padding:40px;">
+                            No incidents found. System is healthy! ✅
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        AIOps SRE Platform | Powered by AWS EKS + K8sGPT + Amazon Bedrock + Claude
+    </div>
+</body>
+</html>

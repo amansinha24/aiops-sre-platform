@@ -2,7 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Placeholder - will be replaced in Phase 6
-RUN echo "API placeholder" > index.txt
+# Install dependencies first (Docker layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "-c", "print('API service starting...')"]
+# Copy application code
+COPY src/ .
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

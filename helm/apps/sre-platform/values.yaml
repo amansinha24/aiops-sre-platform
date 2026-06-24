@@ -1,13 +1,10 @@
-# Global values
 global:
   environment: dev
   project: aiops
   region: ap-south-1
 
-# ECR registry
 registry: 350480401763.dkr.ecr.ap-south-1.amazonaws.com
 
-# Frontend service
 frontend:
   enabled: true
   image:
@@ -16,7 +13,6 @@ frontend:
     pullPolicy: Always
   replicas: 1
 
-# API service
 api:
   enabled: true
   image:
@@ -25,7 +21,7 @@ api:
     pullPolicy: Always
   replicas: 1
 
-# Database
 db:
   enabled: true
   replicas: 1
+  storage: 5Gi
