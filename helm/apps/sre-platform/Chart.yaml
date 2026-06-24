@@ -1,0 +1,12 @@
+apiVersion: v2
+name: sre-platform
+description: AIOps SRE Platform - 3-tier Python application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - aiops
+  - sre
+  - platform
+maintainers:
+  - name: amansinha24

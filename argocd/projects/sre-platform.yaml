@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sre-platform
+  namespace: argocd
+  # Finalizer prevents accidental deletion of project with active apps
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AIOps SRE Platform Project
+
+  # Which Git repos this project can use
+  sourceRepos:
+    - 'https://github.com/amansinha24/aiops-sre-platform'
+    - 'https://charts.helm.sh/stable'
+    - 'https://prometheus-community.github.io/helm-charts'
+    - 'https://grafana.github.io/helm-charts'
+
+  # Which clusters and namespaces this project can deploy to
+  destinations:
+    - namespace: application
+      server: https://kubernetes.default.svc
+    - namespace: observability
+      server: https://kubernetes.default.svc
+    - namespace: aiops
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+
+  # What cluster-level resources this project can manage
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+
+  # What namespace-level resources this project can manage
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

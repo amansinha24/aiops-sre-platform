@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sre-agent
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    project: aiops
+spec:
+  project: sre-platform
+
+  source:
+    repoURL: https://github.com/amansinha24/aiops-sre-platform
+    targetRevision: main
+    path: helm/apps/sre-platform
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aiops
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false
+
+  revisionHistoryLimit: 5

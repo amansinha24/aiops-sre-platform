@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sre-platform-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    project: aiops
+spec:
+  project: sre-platform
+
+  # Where to get the deployment manifests from
+  source:
+    repoURL: https://github.com/amansinha24/aiops-sre-platform
+    targetRevision: main
+    path: helm/apps/sre-platform
+
+  # Where to deploy to
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: application
+
+  # Sync policy - how Argo CD handles updates
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources removed from Git
+      selfHeal: true   # Fix manual changes made outside Git
+    syncOptions:
+      - CreateNamespace=false   # We already created namespaces
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+
+  # Health check settings
+  revisionHistoryLimit: 5
