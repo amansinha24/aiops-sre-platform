@@ -17,11 +17,12 @@ spec:
         app: api
         tier: backend
       annotations:
-        # Tells Prometheus to scrape this pod
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      imagePullSecrets:
+        - name: ecr-secret
       containers:
         - name: api
           image: {{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}

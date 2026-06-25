@@ -1,0 +1,118 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: aiops-alerts
+  namespace: observability
+  labels:
+    release: prometheus
+spec:
+  groups:
+    - name: pod-health
+      interval: 30s
+      rules:
+        - alert: PodCrashLoopBackOff
+          expr: |
+            max_over_time(kube_pod_container_status_waiting_reason{
+              reason="CrashLoopBackOff",
+              namespace=~"application|aiops"
+            }[5m]) == 1
+          for: 1m
+          labels:
+            severity: critical
+            team: sre
+          annotations:
+            summary: "Pod {{ $labels.pod }} is in CrashLoopBackOff"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in CrashLoopBackOff for more than 1 minute."
+            runbook_url: "https://github.com/amansinha24/aiops-sre-platform/docs/runbooks"
+
+        - alert: PodOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{
+              reason="OOMKilled",
+              namespace=~"application|aiops"
+            } == 1
+          for: 0m
+          labels:
+            severity: critical
+            team: sre
+          annotations:
+            summary: "Pod {{ $labels.pod }} was OOMKilled"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} was killed due to out of memory."
+
+        - alert: PodNotReady
+          expr: |
+            kube_pod_status_ready{
+              condition="false",
+              namespace=~"application|aiops"
+            } == 1
+          for: 5m
+          labels:
+            severity: warning
+            team: sre
+          annotations:
+            summary: "Pod {{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been not ready for 5 minutes."
+
+    - name: deployment-health
+      interval: 30s
+      rules:
+        - alert: DeploymentUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace=~"application|aiops"
+            } == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: sre
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} has no available replicas"
+            description: "Deployment {{ $labels.deployment }} in {{ $labels.namespace }} has had 0 available replicas for 2 minutes."
+
+        - alert: DeploymentReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas{namespace=~"application|aiops"}
+            !=
+            kube_deployment_status_replicas_available{namespace=~"application|aiops"}
+          for: 5m
+          labels:
+            severity: warning
+            team: sre
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} replicas mismatch"
+            description: "Deployment {{ $labels.deployment }} desired replicas != available replicas for 5 minutes."
+
+    - name: application-health
+      interval: 30s
+      rules:
+        - alert: HighAPIErrorRate
+          expr: |
+            rate(api_requests_total{status=~"5.."}[5m])
+            /
+            rate(api_requests_total[5m]) > 0.1
+          for: 2m
+          labels:
+            severity: warning
+            team: sre
+          annotations:
+            summary: "High API error rate detected"
+            description: "API error rate is above 10% for the last 2 minutes."
+
+        - alert: HighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{
+              namespace=~"application|aiops",
+              container!=""
+            }
+            /
+            container_spec_memory_limit_bytes{
+              namespace=~"application|aiops",
+              container!=""
+            } > 0.85
+          for: 2m
+          labels:
+            severity: warning
+            team: sre
+          annotations:
+            summary: "High memory usage in {{ $labels.pod }}"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} is using more than 85% of its memory limit."

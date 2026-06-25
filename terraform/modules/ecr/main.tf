@@ -4,6 +4,7 @@ resource "aws_ecr_repository" "repos" {
 
   name                 = "${var.project_name}-${var.environment}-${each.value}"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
 
   # Scan images for vulnerabilities on push - free and important
   image_scanning_configuration {
