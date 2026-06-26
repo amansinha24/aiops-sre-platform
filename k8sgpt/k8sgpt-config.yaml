@@ -1,0 +1,24 @@
+﻿apiVersion: core.k8sgpt.ai/v1alpha1
+kind: K8sGPT
+metadata:
+  name: k8sgpt-analyzer
+  namespace: k8sgpt
+spec:
+  filters:
+    - Pod
+    - Deployment
+    - ReplicaSet
+    - Service
+    - PersistentVolumeClaim
+
+  targetNamespace: "application"
+
+  noCache: false
+
+  ai:
+    enabled: false
+    backend: "amazonbedrock"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+    region: "ap-south-1"
+
+  version: "v0.3.41"

@@ -1,0 +1,18 @@
+﻿# K8sGPT Operator configuration
+serviceAccount:
+  create: true
+  name: k8sgpt
+
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Disable AI backend - we use our own Bedrock integration
+# K8sGPT is used only for Kubernetes analysis
+grafana:
+  enabled: false
