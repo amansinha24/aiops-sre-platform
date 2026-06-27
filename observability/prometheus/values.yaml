@@ -32,6 +32,20 @@ grafana:
     enabled: true
     storageClassName: gp2
     size: 5Gi
+ # Enable sidecar to auto-load dashboards from ConfigMaps
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki:3100
+      access: proxy
+      isDefault: false
 
   resources:
     requests:
