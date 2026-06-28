@@ -1,0 +1,27 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-deploy-sim
+  namespace: application
+  labels:
+    simulation: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bad-deploy-sim
+  template:
+    metadata:
+      labels:
+        app: bad-deploy-sim
+    spec:
+      containers:
+        - name: app
+          image: nginx:this-tag-does-not-exist
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

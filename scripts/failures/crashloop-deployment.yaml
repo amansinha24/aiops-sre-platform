@@ -1,0 +1,28 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crashloop-sim
+  namespace: application
+  labels:
+    simulation: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crashloop-sim
+  template:
+    metadata:
+      labels:
+        app: crashloop-sim
+    spec:
+      containers:
+        - name: crashloop
+          image: busybox
+          command: ["sh", "-c", "echo Starting; sleep 5; exit 1"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

@@ -1,0 +1,28 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-failure
+  namespace: application
+  labels:
+    demo: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-failure
+  template:
+    metadata:
+      labels:
+        app: demo-failure
+    spec:
+      containers:
+        - name: app
+          image: busybox
+          command: ["sh", "-c", "echo Bad code deployed!; exit 1"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
